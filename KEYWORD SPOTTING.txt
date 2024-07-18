@@ -1,0 +1,26 @@
+[audioData, fs] = audioread('/MATLAB Drive/Examples/R2024a/deeplearning_shared/KeywordSpottingInNoiseUsingMFCCAndLSTMNetworksExample/keywordTestSignal.wav');
+[keywordData, fsKeyword] = audioread('/MATLAB Drive/Examples/R2024a/deeplearning_shared/KeywordSpottingInNoiseUsingMFCCAndLSTMNetworksExample/keywordTest.wav'); 
+if fsKeyword ~= fs
+    keywordData = resample(keywordData, fs, fsKeyword);
+end
+audioData = audioData / max(abs(audioData));
+keywordData = keywordData / max(abs(keywordData));
+correlation = xcorr(audioData, keywordData);
+[~, index] = max(correlation);
+timeIndex = (index - length(keywordData)) / fs;
+figure;
+subplot(2, 1, 1);
+plot((1:length(audioData)) / fs, audioData);
+title('Audio Signal');
+xlabel('Time (s)');
+ylabel('Amplitude');
+subplot(2, 1, 2);
+plot((1:length(correlation)) / fs, correlation);
+title('Cross-correlation');
+xlabel('Lag (s)');
+ylabel('Correlation');
+hold on;
+plot((index - length(keywordData)) / fs, correlation(index), 'ro');
+legend('Correlation', 'Detected Keyword');
+disp(['Keyword detected at approximately ', num2str(timeIndex), ' seconds.']);
+sound(keywordData, fs);
